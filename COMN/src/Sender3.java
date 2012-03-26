@@ -2,15 +2,17 @@
 import packet.*;
 import connection.*;
 
+import java.util.*;
+
 public class Sender3 
 {
 	
 	public static void main(String[] args)
 	{
 		
-		if (args.length < 4)
+		if (args.length < 5)
 		{
-			System.out.println("Usage: <host> <port> <filename> <retry timeout>");
+			System.out.println("Usage: <host> <port> <filename> <retry timeout> <window size>");
 			System.exit(0);
 		}
 		
@@ -18,6 +20,7 @@ public class Sender3
 		int port = Integer.parseInt(args[1]);
 		String filename = args[2];
 		int timeout = Integer.parseInt(args[3]);
+		int windowSize = Integer.parseInt(args[4]);
 		
 		DataInputPacketManager dipm = null;
 		OutgoingConnection outConn = null;
@@ -36,17 +39,19 @@ public class Sender3
 			System.exit(99);
 		}
 		
-		short seqNum = 0;
+		short baseNum = 0;
 		Packet p;
-
+		
+		TreeMap<Long,Short> timeouts = new TreeMap<Long,Short>();
+		
 		int resends = 0;
 		
 		do
 		{
 			
-			System.out.println("Sending message (" + seqNum + ")");
+			System.out.println("Sending message (" + baseNum + ")");
 			
-			p = dipm.getPacket(seqNum);
+			p = dipm.getPacket(baseNum);
 			outConn.queuePacket(p);
 			
 			// wait for ack
@@ -59,7 +64,7 @@ public class Sender3
 				ACKP = inConn.getNextPacket();
 				if (ACKP != null)
 				{
-					if (ACKManager.getSequenceNumber(ACKP) == seqNum)
+					if (ACKManager.getSequenceNumber(ACKP) == baseNum)
 					{
 						break;
 					}
@@ -75,7 +80,7 @@ public class Sender3
 				
 			}
 			
-			seqNum++;
+			baseNum++;
 			
 		} while (!DataInputPacketManager.isFinalPacket(p));
 		
