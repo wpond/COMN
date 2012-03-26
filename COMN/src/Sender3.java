@@ -44,6 +44,7 @@ public class Sender3
 		
 		long startTime = System.currentTimeMillis();
 		
+		// using a linked list to get access to peekLast which is not in the queue interface
 		LinkedList<PacketWrapper> sentQueue = new LinkedList<PacketWrapper>();
 		
 		System.out.println("Sending..");
@@ -122,8 +123,8 @@ public class Sender3
 		
 		double timeDiff = (double)(System.currentTimeMillis() - startTime) / 1000d;
 		double throughput = (double)dipm.getFileSize() / (double)timeDiff;
-		System.out.println("Time taken: " + timeDiff);
-		System.out.println("Throughput: " + throughput);
+		System.out.println("Time taken: " + timeDiff + " seconds");
+		System.out.println("Throughput: " + throughput + " bytes per second");
 		
 		System.out.println("Sender complete");
 		
