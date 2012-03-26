@@ -41,7 +41,6 @@ public class Config {
 				continue;
 			}
 			
-			//int listenPort, String sendHost, int sendPort, int delay, double dropRate)
 			int listenPort = Integer.parseInt(values[0]);
 			String sendHost = values[1];
 			int sendPort = Integer.parseInt(values[2]);

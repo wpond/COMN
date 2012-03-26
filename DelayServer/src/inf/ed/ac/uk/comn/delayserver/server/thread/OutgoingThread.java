@@ -30,6 +30,15 @@ public class OutgoingThread extends Thread
 		while (!Thread.interrupted())
 		{
 			
+			try
+			{
+				Thread.sleep(1);
+			}
+			catch (InterruptedException e)
+			{
+				break;
+			}
+			
 			byte[] packet = queue.poll();
 			if (packet == null)
 				continue;

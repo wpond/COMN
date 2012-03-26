@@ -28,6 +28,15 @@ public class DelayThread extends Thread {
 		while (!Thread.interrupted())
 		{
 			
+			try
+			{
+				Thread.sleep(1);
+			}
+			catch (InterruptedException e)
+			{
+				break;
+			}
+			
 			long time;
 			
 			// check for new items on incoming queue
@@ -46,12 +55,9 @@ public class DelayThread extends Thread {
 				
 			}
 			
-			if (delayMap.isEmpty())
-				continue;
-			
 			// check for items in tree to move to outgoing queue
 			Map.Entry<Long, Queue<byte[]>> entry;
-			while (delayMap.firstKey() + delay < System.currentTimeMillis())
+			while (!delayMap.isEmpty() && delayMap.firstKey() + delay < System.currentTimeMillis())
 			{
 				
 				entry = delayMap.pollFirstEntry();
