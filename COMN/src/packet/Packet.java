@@ -90,8 +90,9 @@ public class Packet {
 	public short getShort(int pos) throws PacketException
 	{
 		
-		if (pos >= size() - SHORT_LENGTH)
+		if (pos > size() - SHORT_LENGTH)
 			throw new PacketException("Cannot fetch short at " + pos + " buffer length is " + size());
+		
 		
 		return buffer.getShort(pos);
 		
