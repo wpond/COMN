@@ -39,6 +39,8 @@ public class Sender2
 		short seqNum = 0;
 		Packet p;
 		
+		int resends = 0;
+		
 		do
 		{
 			
@@ -55,16 +57,18 @@ public class Sender2
 			{
 				
 				ACKP = inConn.getNextPacket();
-				if (ACKP == null)
-					continue;
-				
-				if (ACKManager.getSequenceNumber(ACKP) == seqNum)
+				if (ACKP != null)
 				{
-					break;
+					if (ACKManager.getSequenceNumber(ACKP) == seqNum)
+					{
+						break;
+					}
 				}
-					
-				if (sent + timeout > System.currentTimeMillis())
+				
+				if (sent + timeout < System.currentTimeMillis())
 				{
+					System.out.println("Resending...");
+					resends++;
 					outConn.queuePacket(p);
 					sent = System.currentTimeMillis();
 				}
@@ -74,6 +78,8 @@ public class Sender2
 			seqNum++;
 			
 		} while (!DataInputPacketManager.isFinalPacket(p));
+		
+		System.out.println("Resends: " + resends);
 		
 		System.out.println("Sender complete");
 		
