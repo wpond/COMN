@@ -171,6 +171,24 @@ public class DataOutputPacketManager {
 		
 	}
 	
+	/**
+	 * Gets the number of the last packet written.
+	 * 
+	 * Note this is not the last packet we pasted to storePacket.
+	 * 
+	 * @return A sequence number.
+	 */
+	public short getLastSequenceNumber()
+	{
+		return seqNum;
+	}
+	
+	/**
+	 * Get the sequence number of a packet.
+	 * 
+	 * @param p The packet to interpret.
+	 * @return The sequence number.
+	 */
 	public static short getSequenceNumber(Packet p)
 	{
 		try {

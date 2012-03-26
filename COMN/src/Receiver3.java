@@ -75,7 +75,7 @@ public class Receiver3
 			}
 			
 			// send ack
-			outConn.queuePacket(ACKManager.getPacket(DataOutputPacketManager.getSequenceNumber(p)));
+			outConn.queuePacket(ACKManager.getPacket(dopm.getLastSequenceNumber()));
 			
 		}
 		while (!dopm.complete());
