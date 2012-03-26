@@ -9,14 +9,24 @@ public class Receiver2
 	
 	public static void main(String[] args)
 	{
+		
+		if (args.length < 2)
+		{
+			System.out.println("Usage: <port> <filename>");
+			System.exit(0);
+		}
+		
+		int port = Integer.parseInt(args[0]);
+		String filename = args[1];
+		
 		DataOutputPacketManager dopm = null;
 		IncomingConnection inConn = null;
 		OutgoingConnection outConn = null;
 		
 		try
 		{
-			dopm = new DataOutputPacketManager("/afs/inf.ed.ac.uk/user/s08/s0818057/comn/COMN/resources/incoming.jpg");
-			inConn = new IncomingConnection(9899);
+			dopm = new DataOutputPacketManager(filename);
+			inConn = new IncomingConnection(port);
 		}
 		catch (Exception e)
 		{
@@ -47,7 +57,7 @@ public class Receiver2
 				InetSocketAddress addr = inConn.getLastSender();
 				try
 				{
-						outConn = new OutgoingConnection(addr.getHostName(), 9900);
+						outConn = new OutgoingConnection(addr.getHostName(), port+1);
 				}
 				catch (Exception e)
 				{

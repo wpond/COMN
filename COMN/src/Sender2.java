@@ -8,7 +8,16 @@ public class Sender2
 	public static void main(String[] args)
 	{
 		
-		int timeout = 100;
+		if (args.length < 4)
+		{
+			System.out.println("Usage: <host> <port> <filename> <retry timeout>");
+			System.exit(0);
+		}
+		
+		String host = args[0];
+		int port = Integer.parseInt(args[1]);
+		String filename = args[2];
+		int timeout = Integer.parseInt(args[3]);
 		
 		DataInputPacketManager dipm = null;
 		OutgoingConnection outConn = null;
@@ -16,9 +25,9 @@ public class Sender2
 		
 		try
 		{
-			dipm = new DataInputPacketManager("/afs/inf.ed.ac.uk/user/s08/s0818057/comn/COMN/resources/cwk_testfile.jpg");
-			outConn = new OutgoingConnection("localhost",9899);
-			inConn = new IncomingConnection(9900);
+			dipm = new DataInputPacketManager(filename);
+			outConn = new OutgoingConnection(host,port);
+			inConn = new IncomingConnection(port+1);
 		}
 		catch (Exception e)
 		{
