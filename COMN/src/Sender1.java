@@ -39,6 +39,12 @@ public class Sender1
 		do
 		{
 			
+			try
+			{
+				Thread.sleep(1);
+			}
+			catch (Exception e) {}
+			
 			System.out.println("Sending message (" + seqNum + ")");
 			
 			p = dipm.getPacket(seqNum);
