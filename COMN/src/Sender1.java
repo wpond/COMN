@@ -49,6 +49,8 @@ public class Sender1
 		
 		System.out.println("Sender complete");
 		
+		conn.close();
+		
 	}
 	
 }

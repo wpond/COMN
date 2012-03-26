@@ -62,6 +62,8 @@ public class Receiver1
 		
 		System.out.println("Receiver complete");
 		
+		conn.close();
+		
 	}
 	
 }
