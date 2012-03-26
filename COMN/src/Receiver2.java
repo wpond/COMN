@@ -72,6 +72,9 @@ public class Receiver2
 		
 		System.out.println("Receiver complete");
 		
+		inConn.close();
+		outConn.close();
+		
 	}
 	
 }

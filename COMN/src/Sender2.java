@@ -68,6 +68,9 @@ public class Sender2
 		
 		System.out.println("Sender complete");
 		
+		inConn.close();
+		outConn.close();
+		
 	}
 	
 }
