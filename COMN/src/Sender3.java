@@ -122,8 +122,8 @@ public class Sender3
 		
 		double timeDiff = (double)(System.currentTimeMillis() - startTime) / 1000d;
 		double throughput = (double)dipm.getFileSize() / (double)timeDiff;
-		System.out.println("Time taken: " + timeDiff);
-		System.out.println("Throughput: " + throughput);
+		System.out.println("Time taken: " + timeDiff + " seconds");
+		System.out.println("Throughput: " + throughput + " bytes per second");
 		
 		System.out.println("Sender complete");
 		
