@@ -226,6 +226,37 @@ public class DataInputPacketManager {
 		
 	}
 	
+	/**
+	 * Get the file size as returned by File.length().
+	 * 
+	 * @return The file size.
+	 * 
+	 * @see java.io.File
+	 */
+	public long getFileSize()
+	{
+		return file.length();
+	}
+	
+	/**
+	 * 
+	 * Gets the number of packets in this file.  
+	 * 
+	 * To calculate this it is a simple division of length by packet size.
+	 * 
+	 * @return The number of packets.
+	 */
+	public int getPacketCount()
+	{
+		return (int)Math.ceil(getFileSize() / (SIZE - HEADER_SIZE));
+	}
+	
+	/**
+	 * Returns whether this packet has the EoF flag set.
+	 * 
+	 * @param packet The packet to inspect.
+	 * @return Whether the EoF flag is set.
+	 */
 	public static boolean isFinalPacket(Packet packet)
 	{
 		try {

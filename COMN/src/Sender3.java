@@ -42,49 +42,88 @@ public class Sender3
 		short baseNum = 0;
 		Packet p;
 		
-		TreeMap<Long,Short> timeouts = new TreeMap<Long,Short>();
+		long startTime = System.currentTimeMillis();
 		
-		int resends = 0;
+		LinkedList<PacketWrapper> sentQueue = new LinkedList<PacketWrapper>();
 		
-		do
+		System.out.println("Sending..");
+		
+		boolean complete = false;
+		while (!complete)
 		{
 			
-			System.out.println("Sending message (" + baseNum + ")");
-			
-			p = dipm.getPacket(baseNum);
-			outConn.queuePacket(p);
-			
-			// wait for ack
-			Packet ACKP;
-			
-			long sent = System.currentTimeMillis();
-			while (true)
+			// remove all packets for which we have an ACK
+			if (!sentQueue.isEmpty())
 			{
 				
-				ACKP = inConn.getNextPacket();
-				if (ACKP != null)
+				while ((p = sentQueue.peek().getPacket()) != null && DataOutputPacketManager.getSequenceNumber(p) < baseNum)
 				{
-					if (ACKManager.getSequenceNumber(ACKP) == baseNum)
-					{
-						break;
-					}
-				}
-				
-				if (sent + timeout < System.currentTimeMillis())
-				{
-					System.out.println("Resending...");
-					resends++;
-					outConn.queuePacket(p);
-					sent = System.currentTimeMillis();
+					sentQueue.poll();
 				}
 				
 			}
 			
-			baseNum++;
+			// find the next packet seq num to send
+			short nextSeq = baseNum;
 			
-		} while (!DataInputPacketManager.isFinalPacket(p));
+			if (!sentQueue.isEmpty())
+			{	
+				// slide window back to base
+				if (sentQueue.peek().getTime() + timeout < System.currentTimeMillis())
+				{
+					System.out.println(" << RESETTING WINDOW >> ");
+					sentQueue.clear();
+				}
+				else
+				{
+					nextSeq = (short) (DataOutputPacketManager.getSequenceNumber(sentQueue.peekLast().getPacket()) + 1);
+				}
+			}
+			
+			// while i is within window and a packet in the file
+			for (short i = nextSeq; i < baseNum + windowSize && i <= dipm.getPacketCount(); i++)
+			{
+				
+				System.out.println("Sending packet: " + i);
+				
+				p = dipm.getPacket(i);
+				outConn.queuePacket(p);
+				sentQueue.add(new PacketWrapper(p));
+				
+				// TODO: remove before submission
+				try
+				{
+					Thread.sleep(1);
+				}
+				catch (Exception e)
+				{
+					
+				}
+				
+			}
+			
+			// get all responses
+			while ((p = inConn.getNextPacket()) != null)
+			{
+				
+				// set base num to be the max value (discard old ACKs)
+				baseNum = (short) Math.max((DataOutputPacketManager.getSequenceNumber(p) + 1), baseNum);
+				
+				// only set complete to true if we're expecting the next packet to be after EoF
+				if (baseNum > dipm.getPacketCount())
+				{
+					complete = true;
+					break;
+				}
+				
+			}
+			
+		}
 		
-		System.out.println("Resends: " + resends);
+		double timeDiff = (double)(System.currentTimeMillis() - startTime) / 1000d;
+		double throughput = (double)dipm.getFileSize() / (double)timeDiff;
+		System.out.println("Time taken: " + timeDiff);
+		System.out.println("Throughput: " + throughput);
 		
 		System.out.println("Sender complete");
 		
