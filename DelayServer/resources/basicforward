@@ -1,0 +1,7 @@
+// this set up runs sender on 9899-9900 and receiver on 9901-9902
+
+// 9899 -> 9901
+9899 localhost 9901 100 0 1024
+
+// 9901 -> 9900
+9902 localhost 9900 100 0 1024
