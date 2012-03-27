@@ -50,6 +50,9 @@ public class Sender4
 		// this is a list of items we have acks for
 		ArrayList<Short> ackdNums = new ArrayList<Short>();
 		
+		// this is a list of items to resend
+		ArrayList<PacketWrapper> resends = new ArrayList<PacketWrapper>();
+		
 		System.out.println("Sending..");
 		
 		boolean complete = false;
@@ -67,30 +70,61 @@ public class Sender4
 			
 			// check any timeouts
 			// find the next packet seq num to send
-			// TODO: loop sent queue moving timeouts to timeout queue, find highest seq num to start sending from
 			
+			PacketWrapper pw;
+			if (!sentQueue.isEmpty())
+			{
+				
+				Iterator<PacketWrapper> itr = sentQueue.iterator();
+				while (itr.hasNext())
+				{
+					
+					pw = itr.next();
+					p = pw.getPacket();
+					
+					// update next sequence number
+					nextSeq = (short) Math.max(nextSeq, DataOutputPacketManager.getSequenceNumber(p));
+					
+					// check for timeout, if so, add to resends
+					if (pw.getTime() + timeout < System.currentTimeMillis())
+					{
+						itr.remove();
+						resends.add(pw);
+					}
+					
+				}
+				nextSeq++;
+				
+			}
 			
 			// while i is within window and a packet in the file
-			for (short i = nextSeq; i < baseNum + windowSize && i <= dipm.getPacketCount(); i++)
+			for (short i = baseNum; i < baseNum + windowSize && i <= dipm.getPacketCount(); i++)
 			{
 				
 				System.out.println("Sending packet: " + i);
 				
-				p = dipm.getPacket(i);
-				outConn.queuePacket(p);
-				sentQueue.add(new PacketWrapper(p));
-				
-				// TODO: remove before submission
-				try
+				// only send IFF i has already been sent and requires resend OR i hasn't been sent yet
+				if ((i < nextSeq && resends.contains(i)) || i >= nextSeq)
 				{
-					Thread.sleep(1);
-				}
-				catch (Exception e)
-				{
+					p = dipm.getPacket(i);
+					outConn.queuePacket(p);
+					sentQueue.add(new PacketWrapper(p));
 					
+					// TODO: remove before submission
+					try
+					{
+						Thread.sleep(1);
+					}
+					catch (Exception e)
+					{
+						
+					}
 				}
 				
 			}
+			
+			// we've just processed all resends, so clear the queue
+			resends.clear();
 			
 			// get all responses
 			while ((p = inConn.getNextPacket()) != null)
@@ -101,7 +135,7 @@ public class Sender4
 				while (itr.hasNext())
 				{
 					
-					PacketWrapper pw = itr.next();
+					pw = itr.next();
 					
 					// assume only one instance of this in sent queue
 					if (DataOutputPacketManager.getSequenceNumber(pw.getPacket()) == baseNum)
@@ -111,7 +145,6 @@ public class Sender4
 					}
 					
 				}
-				
 				
 				// if we received the base num
 				if (DataOutputPacketManager.getSequenceNumber(p) == baseNum)
