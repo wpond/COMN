@@ -56,14 +56,15 @@ public class Sender3
 			if (!sentQueue.isEmpty())
 			{
 				
-				while ((p = sentQueue.peek().getPacket()) != null && DataOutputPacketManager.getSequenceNumber(p) < baseNum)
+				while (sentQueue.peek() != null && DataOutputPacketManager.getSequenceNumber(sentQueue.peek().getPacket()) < baseNum)
 				{
 					sentQueue.poll();
 				}
 				
 			}
 			
-			// find the next packet seq num to send
+			// find the next packet seq num to send 
+			// base num is the next ACK we expect
 			short nextSeq = baseNum;
 			
 			if (!sentQueue.isEmpty())
@@ -105,6 +106,8 @@ public class Sender3
 			// get all responses
 			while ((p = inConn.getNextPacket()) != null)
 			{
+				
+				System.out.println("Received ACK: " + DataOutputPacketManager.getSequenceNumber(p));
 				
 				// set base num to be the max value (discard old ACKs)
 				baseNum = (short) Math.max((DataOutputPacketManager.getSequenceNumber(p) + 1), baseNum);

@@ -10,14 +10,15 @@ public class Receiver4
 	public static void main(String[] args)
 	{
 		
-		if (args.length < 2)
+		if (args.length < 3)
 		{
-			System.out.println("Usage: <port> <filename>");
+			System.out.println("Usage: <port> <filename> <window size>");
 			System.exit(0);
 		}
 		
 		int port = Integer.parseInt(args[0]);
 		String filename = args[1];
+		int windowSize = Integer.parseInt(args[2]);
 		
 		DataOutputPacketManager dopm = null;
 		IncomingConnection inConn = null;
@@ -64,6 +65,12 @@ public class Receiver4
 					e.printStackTrace();
 					continue;
 				}
+			}
+			
+			if (DataOutputPacketManager.getSequenceNumber(p) > dopm.getLastSequenceNumber() + windowSize)
+			{
+				System.out.println("Received packet greater than the base + the window size, discarding");
+				continue;
 			}
 			
 			try {

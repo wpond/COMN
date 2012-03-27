@@ -52,6 +52,8 @@ public class Receiver3
 				e1.printStackTrace();
 			}
 			
+			// if reply connection doesn't exist
+			// store details for reply connection
 			if (outConn == null)
 			{
 				InetSocketAddress addr = inConn.getLastSender();
@@ -66,16 +68,25 @@ public class Receiver3
 				}
 			}
 			
-			try {
-				dopm.storePacket(p);
-			} catch (PacketException e) {
-				System.err.println(e.getMessage());
-				e.printStackTrace();
-				continue;
+			if (dopm.getLastSequenceNumber()+1 < DataOutputPacketManager.getSequenceNumber(p))
+			{
+				System.out.println("Received out of order packet, not writing");
+			}
+			else
+			{
+				try {
+					dopm.storePacket(p);
+				} catch (PacketException e) {
+					System.err.println(e.getMessage());
+					e.printStackTrace();
+					continue;
+				}
 			}
 			
 			// send ack
-			outConn.queuePacket(ACKManager.getPacket(dopm.getLastSequenceNumber()));
+			System.out.println("Sending ACK: " + (dopm.getLastSequenceNumber()));
+			
+			outConn.queuePacket(ACKManager.getPacket((short) (dopm.getLastSequenceNumber())));
 			
 		}
 		while (!dopm.complete());

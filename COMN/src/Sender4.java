@@ -59,7 +59,7 @@ public class Sender4
 		while (!complete)
 		{
 			
-			// fast forward baseNum, for any which have been received
+			// fast forward baseNum, for any ACKs which have been received
 			while (ackdNums.contains(baseNum))
 			{
 				ackdNums.remove(baseNum);

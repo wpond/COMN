@@ -180,7 +180,7 @@ public class DataOutputPacketManager {
 	 */
 	public short getLastSequenceNumber()
 	{
-		return seqNum;
+		return (short) (seqNum-1);
 	}
 	
 	/**
