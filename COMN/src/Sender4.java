@@ -44,7 +44,11 @@ public class Sender4
 		
 		long startTime = System.currentTimeMillis();
 		
+		// this is a queue of items we're waiting for ACKs for
 		LinkedList<PacketWrapper> sentQueue = new LinkedList<PacketWrapper>();
+		
+		// this is a list of items we have acks for
+		ArrayList<Short> ackdNums = new ArrayList<Short>();
 		
 		System.out.println("Sending..");
 		
@@ -52,33 +56,19 @@ public class Sender4
 		while (!complete)
 		{
 			
-			// remove all packets for which we have an ACK
-			if (!sentQueue.isEmpty())
+			// fast forward baseNum, for any which have been received
+			while (ackdNums.contains(baseNum))
 			{
-				
-				while ((p = sentQueue.peek().getPacket()) != null && DataOutputPacketManager.getSequenceNumber(p) < baseNum)
-				{
-					sentQueue.poll();
-				}
-				
+				ackdNums.remove(baseNum);
+				baseNum++;
 			}
 			
-			// find the next packet seq num to send
 			short nextSeq = baseNum;
 			
-			if (!sentQueue.isEmpty())
-			{	
-				// slide window back to base
-				if (sentQueue.peek().getTime() + timeout < System.currentTimeMillis())
-				{
-					System.out.println(" << RESETTING WINDOW >> ");
-					sentQueue.clear();
-				}
-				else
-				{
-					nextSeq = (short) (DataOutputPacketManager.getSequenceNumber(sentQueue.peekLast().getPacket()) + 1);
-				}
-			}
+			// check any timeouts
+			// find the next packet seq num to send
+			// TODO: loop sent queue moving timeouts to timeout queue, find highest seq num to start sending from
+			
 			
 			// while i is within window and a packet in the file
 			for (short i = nextSeq; i < baseNum + windowSize && i <= dipm.getPacketCount(); i++)
@@ -106,8 +96,33 @@ public class Sender4
 			while ((p = inConn.getNextPacket()) != null)
 			{
 				
-				// set base num to be the max value (discard old ACKs)
-				baseNum = (short) Math.max((DataOutputPacketManager.getSequenceNumber(p) + 1), baseNum);
+				// remove from sent list
+				Iterator<PacketWrapper> itr = sentQueue.iterator();
+				while (itr.hasNext())
+				{
+					
+					PacketWrapper pw = itr.next();
+					
+					// assume only one instance of this in sent queue
+					if (DataOutputPacketManager.getSequenceNumber(pw.getPacket()) == baseNum)
+					{
+						itr.remove();
+						break;
+					}
+					
+				}
+				
+				
+				// if we received the base num
+				if (DataOutputPacketManager.getSequenceNumber(p) == baseNum)
+				{
+					baseNum++;
+				}
+				else
+				{
+					// store the ACK for later
+					ackdNums.add(DataOutputPacketManager.getSequenceNumber(p));
+				}
 				
 				// only set complete to true if we're expecting the next packet to be after EoF
 				if (baseNum > dipm.getPacketCount())
