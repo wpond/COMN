@@ -72,6 +72,7 @@ public class Receiver4
 			if (dopm.getLastSequenceNumber()+windowSize+1 < DataOutputPacketManager.getSequenceNumber(p))
 			{
 				System.out.println("Received out of order packet, not writing");
+				continue;
 			}
 			else
 			{

@@ -62,7 +62,7 @@ public class Sender4
 			// fast forward baseNum, for any ACKs which have been received
 			while (ackdNums.contains(baseNum))
 			{
-				ackdNums.remove(baseNum);
+				ackdNums.remove((Short)baseNum); // cast to object so we don't try and remove item at index baseNum
 				baseNum++;
 			}
 			
@@ -116,14 +116,16 @@ public class Sender4
 			}
 			
 			// while i is within window and a packet in the file
-			for (short i = baseNum; i < baseNum + windowSize && i <= dipm.getPacketCount(); i++)
+			short i = baseNum;
+			while (sentQueue.size() < windowSize)
 			{
-				
-				System.out.println("Sending packet: " + i);
 				
 				// only send IFF i has already been sent and requires resend OR i hasn't been sent yet
 				if ((i < nextSeq && resends.contains(i)) || i >= nextSeq)
 				{
+					
+					System.out.println("Sending packet: " + i);
+					
 					p = dipm.getPacket(i);
 					outConn.queuePacket(p);
 					sentQueue.add(new PacketWrapper(p));
@@ -138,6 +140,8 @@ public class Sender4
 						
 					}
 				}
+				
+				i++;
 				
 			}
 			
